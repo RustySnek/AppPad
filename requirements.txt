@@ -1,0 +1,4 @@
+infi.systray==0.1.12
+launchpad-py==0.9.1
+pygame==2.0.1
+pylint==2.7.2
