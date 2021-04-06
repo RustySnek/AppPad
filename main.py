@@ -3,37 +3,23 @@ from pygame import time
 import launchpad_py as launchpad
 from tkinter import *
 from tkinter import filedialog
-import tkinter.messagebox
 from json import dump, load
 import os
 import subprocess
 from infi.systray import SysTrayIcon
-import keyboard
 
 try:
     print("-" * 50)
     print(" " * 20 + "LaunchApp")
     print(" " * 13 + "Check tray icon for options.")
     print("-" * 50)
-    print("""
-    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣬⡛⣿⣿⣿⣯⢻ 
-    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⢻⣿⣿⢟⣻⣿⣿⣿⣿⣿⣿⣮⡻⣿⣿⣧ 
-    ⣿⣿⣿⣿⣿⢻⣿⣿⣿⣿⣿⣿⣆⠻⡫⣢⠿⣿⣿⣿⣿⣿⣿⣿⣷⣜⢻⣿ 
-    ⣿⣿⡏⣿⣿⣨⣝⠿⣿⣿⣿⣿⣿⢕⠸⣛⣩⣥⣄⣩⢝⣛⡿⠿⣿⣿⣆⢝ 
-    ⣿⣿⢡⣸⣿⣏⣿⣿⣶⣯⣙⠫⢺⣿⣷⡈⣿⣿⣿⣿⡿⠿⢿⣟⣒⣋⣙⠊ 
-    ⣿⡏⡿⣛⣍⢿⣮⣿⣿⣿⣿⣿⣿⣿⣶⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿ 
-    ⣿⢱⣾⣿⣿⣿⣝⡮⡻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⠛⣋⣻⣿⣿⣿⣿ 
-    ⢿⢸⣿⣿⣿⣿⣿⣿⣷⣽⣿⣿⣿⣿⣿⣿⣿⡕⣡⣴⣶⣿⣿⣿⡟⣿⣿⣿ 
-    ⣦⡸⣿⣿⣿⣿⣿⣿⡛⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⣿⣿⣿ 
-    ⢛⠷⡹⣿⠋⣉⣠⣤⣶⣶⣿⣿⣿⣿⣿⣿⡿⠿⢿⣿⣿⣿⣿⣿⣷⢹⣿⣿ 
-    ⣷⡝⣿⡞⣿⣿⣿⣿⣿⣿⣿⣿⡟⠋⠁⣠⣤⣤⣦⣽⣿⣿⣿⡿⠋⠘⣿⣿ 
-    ⣿⣿⡹⣿⡼⣿⣿⣿⣿⣿⣿⣿⣧⡰⣿⣿⣿⣿⣿⣹⡿⠟⠉⡀⠄⠄⢿⣿ 
-    ⣿⣿⣿⣽⣿⣼⣛⠿⠿⣿⣿⣿⣿⣿⣯⣿⠿⢟⣻⡽⢚⣤⡞⠄⠄⠄⢸⣿""")
 except:
     pass
 
 root = Tk()
 root.withdraw()
+binding_toggle = False
+key_toggle = False
 
 def msgbox(x, y):
     top = Toplevel()
@@ -44,14 +30,9 @@ def msgbox(x, y):
     
 try:
     lp = launchpad.Launchpad()
-except AttributeError:
-    pass
-binding_toggle = False
-key_toggle = False
-try:
     lp.Open()
     lp.Reset()
-except:
+except AttributeError:
     msgbox("Error!", "Failed to connect the launchpad!")
 
 bind_list = [
@@ -63,7 +44,7 @@ def launch(k):
         return
     keys = [k for _, k in bind_list]
     try:
-        ki = keys.index(k)
+        ki = keys.index(k) # Finding program path
     except ValueError:
         return
     program_path = bind_list[ki][0]
@@ -71,10 +52,8 @@ def launch(k):
         subprocess.Popen(program_path)
     except:
         msgbox("Error!", "Program was moved or deleted.")
-        bind_list.pop(ki)
-        #print(bind_list)
+        bind_list.pop(ki) # If the path no longer exists it gets deleted.
         lp.Reset()
-
 
 def bindToggle():
     global binding_toggle
@@ -83,7 +62,6 @@ def bindToggle():
         lp.LedAllOn(1)
     elif binding_toggle is False:
         lp.LedAllOn(0)
-    #print("binding {}.".format(binding_toggle))
 
 def keyToggle():
     global key_toggle
@@ -133,7 +111,6 @@ def load_binds(systray):
     global bind_list
     with open("save.json", "r", encoding="utf8") as f:
         bind_list = load(f)
-        #print("Loaded save.json. \n Current binds = {}.".format(bind_list))
         
 
 def clear_binds(systray):
